@@ -63,7 +63,9 @@ export function VerificationForm({ email }: { email: string }) {
         roles,
         verified,
         avatar,
-      } = res.data;
+      } = res.data.data;
+
+
       Cookies.set("accessToken", accessToken, { expires: 7, sameSite: "lax" });
       sessionStorage.setItem("userEmail", userEmail);
       sessionStorage.setItem("roles", JSON.stringify(roles));
