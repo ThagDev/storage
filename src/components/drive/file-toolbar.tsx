@@ -8,6 +8,8 @@ import { useState } from "react"
 import Link from "next/link"
 // import { usePathname } from "next/navigation"
 import { ChevronRight, Grid, List, SortAsc, Upload, FolderPlus, Trash2, RotateCcw } from "lucide-react"
+import { useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -21,7 +23,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { FileUploader } from "@/components/drive/file-uploader"
+
+const FileUploader = dynamic(() => import("@/components/drive/file-uploader").then(mod => mod.FileUploader), { ssr: false });
 
 interface FileToolbarProps {
     currentPath: string
@@ -36,6 +39,7 @@ export function FileToolbar({
     isStarredView = false,
     isTrashView = false,
 }: FileToolbarProps) {
+    const router = useRouter();
     // const pathname = usePathname()
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
     const [isUploadOpen, setIsUploadOpen] = useState(false)
@@ -66,12 +70,27 @@ export function FileToolbar({
 
     const breadcrumbs = getBreadcrumbs()
 
-    const handleCreateFolder = (e: React.FormEvent) => {
-        e.preventDefault()
-        // In a real app, you would create the folder in the database
-        console.log(`Creating folder: ${newFolderName} at path: ${currentPath}`)
-        setNewFolderName("")
-        setIsCreateFolderOpen(false)
+    const handleCreateFolder = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newFolderName.trim() && currentPath !== "") {
+            // Không cho phép tạo folder không tên nếu không phải root
+            return;
+        }
+        try {
+            const { apiAuth } = await import("@/lib/axios-instance");
+            const body: Record<string, string> = { name: newFolderName };
+            // Nếu không phải tạo folder cha (root), thêm parentId
+            if (currentPath && currentPath !== "/") {
+                const segments = currentPath.split("/").filter(Boolean);
+                body.parentId = segments[segments.length - 1];
+            }
+            await apiAuth.post("/api/folder", body);
+            setNewFolderName("");
+            setIsCreateFolderOpen(false);
+            router.refresh();
+        } catch {
+            alert("Tạo folder thất bại");
+        }
     }
 
     return (

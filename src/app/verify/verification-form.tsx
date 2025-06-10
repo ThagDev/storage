@@ -64,18 +64,19 @@ export function VerificationForm({ email }: { email: string }) {
         verified,
         avatar,
       } = res.data.data;
-
+      console.log(res.data.data);
 
       Cookies.set("accessToken", accessToken, { expires: 7, sameSite: "lax" });
       sessionStorage.setItem("userEmail", userEmail);
+      sessionStorage.setItem("profilePicture", avatar || "");
       sessionStorage.setItem("roles", JSON.stringify(roles));
       sessionStorage.setItem("verified", JSON.stringify(verified));
-      if (avatar) {
-        sessionStorage.setItem("profilePicture", avatar);
-        window.dispatchEvent(new Event("profilePictureUpdated"));
-      } else {
-        sessionStorage.removeItem("profilePicture");
-      }
+      // if (avatar) {
+      //   sessionStorage.setItem("profilePicture", avatar);
+      //   window.dispatchEvent(new Event("profilePictureUpdated"));
+      // } else {
+      //   sessionStorage.removeItem("profilePicture");
+      // }
       setSuccess("Verification successful! Redirecting to drive...");
       setShowOverlay(true);
       setIsLoading(false);

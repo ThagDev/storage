@@ -19,9 +19,12 @@ export function useAuth() {
   }, []);
 
   const logout = () => {
+    // Xóa accessToken ở mọi path, domain (nếu có thể)
+    Cookies.remove("accessToken", { path: "/" });
     Cookies.remove("accessToken");
     sessionStorage.clear();
-    window.location.href = "/login";
+    // Reload để đảm bảo cookie biến mất ở mọi nơi
+    window.location.replace("/login");
   };
 
   return {

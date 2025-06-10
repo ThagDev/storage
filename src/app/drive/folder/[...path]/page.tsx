@@ -1,20 +1,16 @@
+import { notFound } from "next/navigation";
 import { FileGrid } from "@/components/drive/file-grid";
 import { FileToolbar } from "@/components/drive/file-toolbar";
 import { getFiles } from "@/lib/file-service";
-import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { getValidAccessTokenServerSide } from "@/lib/server-auth";
 
 export default async function FolderPage({
   params,
 }: {
   params: Promise<{ path: string[] }>;
 }) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("accessToken");
-  if (!accessToken) {
-    redirect("/login");
-  }
-
+  // Lấy accessToken hợp lệ, tự động refresh nếu hết hạn
+  await getValidAccessTokenServerSide();
   const resolvedParams = await params;
   // Construct the path from the URL segments
   const path = `/${resolvedParams.path.join("/")}`;

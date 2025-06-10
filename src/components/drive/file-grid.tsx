@@ -14,7 +14,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ShareDialog } from "./share-dialog"
+import dynamic from "next/dynamic"
+import NextImage from "@/components/ui/next-image"
+
+const ShareDialog = dynamic(() => import("./share-dialog").then(mod => mod.ShareDialog), { ssr: false })
 
 export function FileGrid({ files }: { files: FileItem[] }) {
     // const pathname = usePathname()
@@ -38,10 +41,21 @@ export function FileGrid({ files }: { files: FileItem[] }) {
         if (file.type === "folder") {
             return <Folder className="h-16 w-16 text-yellow-400" />
         }
-
+        // Nếu là ảnh và có url, hiển thị ảnh thumbnail tối ưu với next/image
+        if ((file.mimeType === "image/jpeg" || file.mimeType === "image/png" || file.mimeType === "image/gif") && file.url) {
+            return (
+                <NextImage
+                    src={file.url}
+                    alt={file.name}
+                    width={64}
+                    height={64}
+                    className="h-16 w-16 object-cover rounded"
+                    style={{ objectFit: 'cover' }}
+                />
+            )
+        }
         let IconComponent = File
         let iconColorClass = "text-gray-400"
-
         switch (file.mimeType) {
             case "image/jpeg":
             case "image/png":
@@ -62,7 +76,6 @@ export function FileGrid({ files }: { files: FileItem[] }) {
                 IconComponent = File
                 break
         }
-
         return <IconComponent className={`h-16 w-16 ${iconColorClass}`} />
     }
 

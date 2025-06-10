@@ -15,7 +15,8 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import NextImage from "@/components/ui/next-image"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 interface ShareDialogProps {
     isOpen: boolean
@@ -115,7 +116,13 @@ export function ShareDialog({ isOpen, onClose, file }: ShareDialogProps) {
                                 <div key={user.id} className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <Avatar className="h-8 w-8">
-                                            <AvatarImage src={`/placeholder.svg?height=32&width=32`} alt={user.name} />
+                                            <NextImage
+                                                src={`/placeholder.svg?height=32&width=32`}
+                                                alt={user.name}
+                                                width={32}
+                                                height={32}
+                                                className="rounded-full h-8 w-8 object-cover"
+                                            />
                                             <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
                                         </Avatar>
                                         <div>

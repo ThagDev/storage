@@ -9,7 +9,7 @@ export default function LogoutButton() {
 
   const handleLogout = async () => {
     try {
-      await apiAuth.post("logout");
+      await apiAuth.post("/mutiple-auth/logout");
       logout();
       toast({ message: "Logged out successfully!", type: "success" });
     } catch {

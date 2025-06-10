@@ -5,9 +5,11 @@ import Link from "next/link";
 // import { usePathname } from "next/navigation"
 import { Menu, Settings, HelpCircle, Bell } from "lucide-react";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import NextImage from "@/components/ui/next-image";
+import { Avatar } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,9 +19,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { DriveSidebar } from "./drive-sidebar";
 import LogoutButton from "./logout-button";
 // import { useAuth } from "@/lib/use-auth";
+
+const DriveSidebar = dynamic(
+  () => import("./drive-sidebar").then((mod) => mod.DriveSidebar),
+  { ssr: false }
+);
 
 export function DriveHeader() {
   // const [searchQuery, setSearchQuery] = useState("")
@@ -120,10 +126,14 @@ export function DriveHeader() {
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
                   {profilePicture && (
-                    <AvatarImage
-                      className="object-cover"
+                    <NextImage
+                      className="object-cover rounded-full h-8 w-8"
                       src={profilePicture}
                       alt="User"
+                      width={32}
+                      height={32}
+                      priority
+                      unoptimized={true}
                       onLoad={() => setImgLoaded(true)}
                       style={{ display: imgLoaded ? "block" : "none" }}
                     />
