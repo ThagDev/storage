@@ -1,22 +1,25 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import { showToast } from "@/lib/toast";
 
 // Axios instance cho API cần Bearer token
 export const apiAuth = axios.create({
-  baseURL: "https://hoquocthang.vercel.app/mutiple-auth/",
+  baseURL: "https://hoquocthang.vercel.app",
 });
 
 // Axios instance cho API không cần Bearer token
 export const apiNoAuth = axios.create({
-  baseURL: "https://hoquocthang.vercel.app/mutiple-auth/",
+  baseURL: "https://hoquocthang.vercel.app",
 });
 
 // Interceptor cho apiAuth: tự động gắn Bearer token và tự refresh nếu hết hạn
 apiAuth.interceptors.request.use((config) => {
-  const token = Cookies.get("accessToken");
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers["Authorization"] = `Bearer ${token}`;
+  if (typeof window !== "undefined") {
+    const token = Cookies.get("accessToken");
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
   }
   return config;
 });
@@ -29,22 +32,32 @@ apiAuth.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        // Gọi API refresh token
-        const refreshRes = await apiNoAuth.post("refresh");
-        const newToken = refreshRes.data?.accessToken;
-        if (newToken) {
-          Cookies.set("accessToken", newToken, { expires: 7, sameSite: "lax" });
-          // Gắn lại token mới và retry request cũ
-          originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-          return apiAuth(originalRequest);
-        }
-      } catch (refreshError) {
-        // Nếu refresh cũng fail thì xóa token và logout
+        // Gọi API logout để backend xóa luôn cookie/token phía server
+        await apiNoAuth.post("/mutiple-auth/logout");
+        Cookies.remove("accessToken", { path: "/" });
         Cookies.remove("accessToken");
         sessionStorage.clear();
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
-        }
+        showToast({
+          message: "Phiên làm việc của bạn đã hết hạn. Vui lòng đăng nhập lại.",
+          type: "error",
+          duration: 3000,
+        });
+        setTimeout(() => {
+          window.location.replace("/login");
+        }, 1200);
+        return Promise.reject(error);
+      } catch (refreshError) {
+        Cookies.remove("accessToken", { path: "/" });
+        Cookies.remove("accessToken");
+        sessionStorage.clear();
+        showToast({
+          message: "Phiên làm việc của bạn đã hết hạn. Vui lòng đăng nhập lại.",
+          type: "error",
+          duration: 3000,
+        });
+        setTimeout(() => {
+          window.location.replace("/login");
+        }, 1200);
         return Promise.reject(refreshError);
       }
     }

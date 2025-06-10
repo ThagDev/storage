@@ -1,16 +1,12 @@
+import { getValidAccessTokenServerSide } from "@/lib/server-auth";
 import { FileGrid } from "@/components/drive/file-grid";
 import { FileToolbar } from "@/components/drive/file-toolbar";
 import { getSharedFiles } from "@/lib/file-service";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 export default async function SharedPage() {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("accessToken");
-  if (!accessToken) {
-    redirect("/login");
-  }
+  // Lấy accessToken hợp lệ, tự động refresh nếu hết hạn
+  await getValidAccessTokenServerSide();
 
   // Get shared files
   const files = getSharedFiles();

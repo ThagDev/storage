@@ -13,6 +13,7 @@ export interface FileItem {
   starred?: boolean;
   shared?: boolean;
   trashed?: boolean;
+  url?: string; // URL ảnh thumbnail nếu có
 }
 
 // Mock data
@@ -125,6 +126,7 @@ const mockFiles: FileItem[] = [
     mimeType: 'image/jpeg',
     createdAt: '2023-02-20T16:45:00Z',
     modifiedAt: '2023-02-20T16:45:00Z',
+    url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=400&h=400',
   },
   {
     id: '12',
@@ -136,6 +138,7 @@ const mockFiles: FileItem[] = [
     createdAt: '2023-03-05T12:10:00Z',
     modifiedAt: '2023-03-05T12:10:00Z',
     starred: true,
+    url: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=facearea&w=400&h=400',
   },
   // Project Files folder contents
   {
@@ -214,6 +217,38 @@ export function getTrashFiles(): FileItem[] {
 // Get a specific file by ID
 export function getFileById(id: string): FileItem | undefined {
   return mockFiles.find((file) => file.id === id);
+}
+
+// Lấy contents (folders, files) trong drive hoặc trong 1 folder cụ thể
+import { apiAuth } from "@/lib/axios-instance";
+
+export async function getDriveContents({
+  limit = 20,
+  page = 1,
+  sortOrder = "desc",
+  sortField = "createdAt",
+  search = "",
+  parentId = "",
+  headers = undefined
+}: {
+  limit?: number;
+  page?: number;
+  sortOrder?: string;
+  sortField?: string;
+  search?: string;
+  parentId?: string;
+  headers?: Record<string, string>;
+} = {}) {
+  const params: Record<string, unknown> = {
+    limit,
+    page,
+    sortOrder,
+    sortField,
+  };
+  if (search) params.search = search;
+  if (parentId) params.parentId = parentId;
+  const res = await apiAuth.get("/api/drive/contents", { params, headers });
+  return res.data;
 }
 
 // In a real app, you would have functions to:

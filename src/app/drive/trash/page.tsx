@@ -1,15 +1,11 @@
+import { getValidAccessTokenServerSide } from "@/lib/server-auth";
 import { FileGrid } from "@/components/drive/file-grid";
 import { FileToolbar } from "@/components/drive/file-toolbar";
 import { getTrashFiles } from "@/lib/file-service";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 export default async function TrashPage() {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("accessToken");
-  if (!accessToken) {
-    redirect("/login");
-  }
+  // Lấy accessToken hợp lệ, tự động refresh nếu hết hạn
+  await getValidAccessTokenServerSide();
 
   // Get files in trash
   const files = getTrashFiles();
